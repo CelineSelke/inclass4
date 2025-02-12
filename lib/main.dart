@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:confetti/confetti.dart';
 
 void main() {
@@ -56,7 +57,11 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateMixin {
+  late AnimationController controller;
+  late Animation animation;
+  late int duration;
+  late Timer periodictimer;
   double _opacity = 0.0;
   String _message = "";
   final TextEditingController _controller = TextEditingController();
@@ -67,8 +72,38 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     _confettiController =
       ConfettiController(duration: const Duration(days: 1));
-  }
+    duration = 1000;
+    controller = AnimationController(vsync: this, duration: Duration(milliseconds: duration));
+    animation = Tween<double>(begin: 100.0, end: 200.0).animate(controller);
+    controller.forward();
+    if(controller.isCompleted){
+      controller.reverse();
+    }
+    else{
+      controller.forward();
+    }
+    controller.repeat();
+    startTimer();
 
+
+
+  }
+  int duration_remaining = 1500;
+  late Timer _timer;
+  void startTimer(){
+      _timer = Timer.periodic(Duration(milliseconds: 1500), (timer){
+        setState(() {
+          if (duration_remaining > 0){
+            duration_remaining -= 1;
+          }
+          else {
+            _timer.cancel();
+          }
+        });
+
+      
+      });
+  }
 
   void _triggerConfetti() {
     _confettiController.play();
@@ -93,14 +128,15 @@ class _MyHomePageState extends State<MyHomePage> {
     _controller.clear();
   }
 
+
+
+
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+
+
+
+
     return Scaffold(
       appBar: AppBar(
         // TRY THIS: Try changing the color here to a specific color (to
@@ -163,6 +199,21 @@ class _MyHomePageState extends State<MyHomePage> {
                     )
                   : const SizedBox(),
             ),
+            Text("$duration_remaining"),
+
+            AnimatedBuilder(
+                
+                animation: animation,
+
+                builder:(context, child) {
+                    return Container(
+                      width: animation.value,
+                      height: animation.value,
+                      child:Image.asset("assets/images/heart.png"));
+                    
+                },
+
+              ),
             const SizedBox(height: 20),
             TextField(
               controller: _controller,
@@ -184,13 +235,12 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      ],
-      ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _triggerConfetti,
-        tooltip: 'Celebrate',
-        child: const Icon(Icons.favorite),
-      ), 
+        onPressed: _incrementCounter,
+        tooltip: 'Increment',
+        child: const Icon(Icons.add),
+      ),
+         // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
