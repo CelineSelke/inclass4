@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 void main() {
   runApp(const MyApp());
@@ -58,6 +59,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   late AnimationController controller;
   late Animation animation;
   late int duration;
+  late Timer periodictimer;
 
   @override
   void initState() {
@@ -73,7 +75,26 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       controller.forward();
     }
     controller.repeat();
+    startTimer();
 
+
+
+  }
+  int duration_remaining = 1500;
+  late Timer _timer;
+  void startTimer(){
+      _timer = Timer.periodic(Duration(milliseconds: 1500), (timer){
+        setState(() {
+          if (duration_remaining > 0){
+            duration_remaining -= 1;
+          }
+          else {
+            _timer.cancel();
+          }
+        });
+
+      
+      });
   }
 
 
@@ -114,7 +135,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
           // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text("$duration"),
+            Text("$duration_remaining"),
 
             AnimatedBuilder(
                 
