@@ -1,4 +1,6 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:confetti/confetti.dart';
 
 void main() {
   runApp(const MyApp());
@@ -55,17 +57,50 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  double _opacity = 0.0;
+  String _message = "";
+  final TextEditingController _controller = TextEditingController();
+  late ConfettiController _confettiController;
+  bool _showConfetti = false;
 
-  void _incrementCounter() {
+  @override
+  void initState() {
+    super.initState();
+    _confettiController =
+      ConfettiController(duration: const Duration(days: 1));
+  }
+
+
+  void _triggerConfetti() {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _showConfetti = true;
     });
+
+    _confettiController.play();
+    
+    // Stop confetti animation after 3 seconds
+    Future.delayed(const Duration(seconds: 5), () {
+      setState(() {
+        _showConfetti = false;
+      });
+      _confettiController.stop();
+    });
+  }
+
+  void _showMessage() {
+    if (_controller.text.isEmpty) return;
+
+    setState(() {
+      _message = _controller.text;
+      _opacity = 1.0;
+    });
+    Future.delayed(const Duration(seconds: 2), () {
+      setState(() {
+        _opacity = 0.0;
+      });
+    });
+
+    _controller.clear();
   }
 
   @override
@@ -86,10 +121,31 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Center(
+      body: 
+      Stack(
+        children: <Widget>[
+          Visibility(
+            visible: _showConfetti,
+          // Confetti in the background
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: ConfettiWidget(
+                confettiController: _confettiController,
+                blastDirection: pi / 2, // Confetti falls down
+                maxBlastForce: 20, // Confetti speed
+                minBlastForce: 10,
+                emissionFrequency: 0.1,
+                numberOfParticles: 30,
+                gravity: 0.2,
+              ),
+            ),
+          ),
+      
+      Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
         child: Column(
+          
           // Column is also a layout widget. It takes a list of children and
           // arranges them vertically. By default, it sizes itself to fit its
           // children horizontally, and tries to be as tall as its parent.
@@ -104,22 +160,50 @@ class _MyHomePageState extends State<MyHomePage> {
           // action in the IDE, or press "p" in the console), to see the
           // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+          
+          children: <Widget>[          
+            AnimatedOpacity(
+              duration: const Duration(seconds: 1),
+              opacity: _opacity,
+              child: _message.isNotEmpty
+                  ? Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      child: Text(
+                        _message,
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                    )
+                  : const SizedBox(),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            const SizedBox(height: 20),
+            TextField(
+              controller: _controller,
+              decoration: InputDecoration(
+                hintText: "Type a Valentine's Day Message...",
+                hintStyle: TextStyle(color: Colors.black),
+                filled: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Colors.black, width: 1),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _showMessage,
+              child: const Text("Show Message"),
             ),
           ],
         ),
       ),
+      ],
+      ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+        onPressed: _triggerConfetti,
+        tooltip: 'Celebrate',
+        child: const Icon(Icons.party_mode),
+      ), 
     );
   }
 }
