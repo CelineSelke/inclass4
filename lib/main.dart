@@ -61,7 +61,6 @@ class _MyHomePageState extends State<MyHomePage> {
   String _message = "";
   final TextEditingController _controller = TextEditingController();
   late ConfettiController _confettiController;
-  bool _showConfetti = false;
 
   @override
   void initState() {
@@ -72,17 +71,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
 
   void _triggerConfetti() {
-    setState(() {
-      _showConfetti = true;
-    });
-
     _confettiController.play();
-    
-    // Stop confetti animation after 3 seconds
     Future.delayed(const Duration(seconds: 5), () {
-      setState(() {
-        _showConfetti = false;
-      });
       _confettiController.stop();
     });
   }
@@ -124,10 +114,8 @@ class _MyHomePageState extends State<MyHomePage> {
       body: 
       Stack(
         children: <Widget>[
-          Visibility(
-            visible: _showConfetti,
           // Confetti in the background
-            child: Align(
+            Align(
               alignment: Alignment.topCenter,
               child: ConfettiWidget(
                 confettiController: _confettiController,
@@ -139,7 +127,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 gravity: 0.2,
               ),
             ),
-          ),
       
       Center(
         // Center is a layout widget. It takes a single child and positions it
@@ -202,7 +189,7 @@ class _MyHomePageState extends State<MyHomePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: _triggerConfetti,
         tooltip: 'Celebrate',
-        child: const Icon(Icons.party_mode),
+        child: const Icon(Icons.favorite),
       ), 
     );
   }
